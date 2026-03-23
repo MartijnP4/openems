@@ -29,9 +29,9 @@ import io.openems.edge.common.startstop.StartStoppable;
 
 /**
  * Deye SUN-10K SG04LP3-EU — Battery Nature
- * <p>Reads SOC and battery power from the Deye inverter via Modbus TCP.
+ * Reads SOC and battery power from the Deye inverter via Modbus TCP.
  * Uses validated register map from working Loxone installation.
- * <p>Register map:
+ * Register map:
  *   588  Battery SOC        uint16  %
  *   590  Battery Power      int16   W  (+ = charging, - = discharging)
  *   500  Run State          uint16  0=standby, 2=normal
