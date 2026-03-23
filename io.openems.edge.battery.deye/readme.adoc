@@ -1,0 +1,3 @@
+= Battery Deye SG04LP3
+
+OpenEMS driver for Deye SUN-10K SG04LP3-EU inverter via Modbus TCP.
