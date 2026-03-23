@@ -177,7 +177,7 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
 
     @Override
     public int getPowerPrecision() {
-    // Deye werkt in Ampere stappen, bij 48V is 1A ≈ 48W
+        // Deye werkt in Ampere stappen, bij 48V is 1A ≈ 48W
         return 48;
     }
             
