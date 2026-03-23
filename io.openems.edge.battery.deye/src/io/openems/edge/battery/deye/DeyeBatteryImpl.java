@@ -137,4 +137,3 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
     }
 
 }
-}
