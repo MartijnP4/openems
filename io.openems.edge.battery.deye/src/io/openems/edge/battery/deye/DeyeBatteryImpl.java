@@ -24,6 +24,9 @@ import io.openems.edge.common.channel.Doc;
 import io.openems.edge.common.component.OpenemsComponent;
 import io.openems.edge.common.taskmanager.Priority;
 
+import io.openems.edge.common.startstop.StartStop;
+import io.openems.edge.common.startstop.StartStoppable;
+
 /**
  * Deye SUN-10K SG04LP3-EU — Battery Nature
  *
@@ -42,7 +45,7 @@ import io.openems.edge.common.taskmanager.Priority;
     configurationPolicy = ConfigurationPolicy.REQUIRE
 )
 public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
-        implements Battery, ModbusComponent, OpenemsComponent {
+        implements Battery, ModbusComponent, OpenemsComponent, StartStoppable {
 
     // Register addresses
     private static final int REG_RUN_STATE   = 500;
@@ -127,4 +130,11 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
         return "SOC:" + this.getSoc().asString()
             + "|RunState:" + this.channel(ChannelId.RUN_STATE).value().asString();
     }
+    
+    @Override
+    public void setStartStop(StartStop value) {
+        // Start/stop is managed by the Deye inverter itself
+    }
+
+}
 }
