@@ -32,67 +32,42 @@ import io.openems.edge.common.startstop.StartStop;
 import io.openems.edge.common.startstop.StartStoppable;
 import io.openems.edge.common.taskmanager.Priority;
 
-/**
- * Deye SUN-10K SG04LP3-EU — BatteryInverter Nature.
- *
- * <p>Reads grid/inverter power and writes charge/discharge setpoints.
- * Uses validated register map from working Loxone installation.
- *
- * <p>Read registers: 607 Grid Side Total Power int16 W, 636 Inverter Output
- * Power uint16 W, 142 Operating Mode uint16.
- *
- * <p>Write registers: 108 Charge Limit uint16 A, 109 Discharge Limit uint16 A,
- * 130 Grid Charge Enable uint16 0=off 1=on.
- */
 @Designate(ocd = BatteryInverterConfig.class, factory = true)
-@Component(//
-    name = "BatteryInverter.Deye.SG04LP3", //
-    immediate = true, //
-    configurationPolicy = ConfigurationPolicy.REQUIRE //
+@Component(
+    name = "BatteryInverter.Deye.SG04LP3",
+    immediate = true,
+    configurationPolicy = ConfigurationPolicy.REQUIRE
 )
 public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
         implements ManagedSymmetricBatteryInverter, SymmetricBatteryInverter,
         ModbusComponent, OpenemsComponent, StartStoppable {
 
-    private static final int REG_OPERATING_MODE = 142;
-    private static final int REG_GRID_POWER = 607;
-    private static final int REG_INVERTER_POWER = 636;
-    private static final int REG_CHARGE_LIMIT = 108;
-    private static final int REG_DISCHARGE_LIMIT = 109;
+    private static final int REG_OPERATING_MODE    = 142;
+    private static final int REG_GRID_POWER        = 607;
+    private static final int REG_INVERTER_POWER    = 636;
+    private static final int REG_CHARGE_LIMIT      = 108;
+    private static final int REG_DISCHARGE_LIMIT   = 109;
     private static final int REG_GRID_CHARGE_ENABLE = 130;
-    private static final int BATTERY_VOLTAGE_V = 48;
+    private static final int BATTERY_VOLTAGE_V     = 48;
 
-    /** Channel IDs for Deye BatteryInverter. */
     public enum ChannelId implements io.openems.edge.common.channel.ChannelId {
-        /** Grid Side Total Power [W] (+ import, - export). */
         GRID_POWER(Doc.of(io.openems.common.types.OpenemsType.INTEGER)),
-        /** Inverter Output Total Power [W]. */
         INVERTER_OUTPUT_POWER(Doc.of(io.openems.common.types.OpenemsType.INTEGER)),
-        /** Deye Operating Mode. */
         OPERATING_MODE(Doc.of(io.openems.common.types.OpenemsType.INTEGER)),
-        /** Charge limit [A] written to register 108. */
         SET_CHARGE_LIMIT_AMPERE(Doc.of(io.openems.common.types.OpenemsType.INTEGER)),
-        /** Discharge limit [A] written to register 109. */
         SET_DISCHARGE_LIMIT_AMPERE(Doc.of(io.openems.common.types.OpenemsType.INTEGER)),
-        /** Grid Charge Enable: 0=off, 1=on. */
         SET_GRID_CHARGE_ENABLE(Doc.of(io.openems.common.types.OpenemsType.INTEGER));
 
         private final Doc doc;
-
-        ChannelId(Doc doc) {
-            this.doc = doc;
-        }
+        ChannelId(Doc doc) { this.doc = doc; }
 
         @Override
-        public Doc doc() {
-            return this.doc;
-        }
+        public Doc doc() { return this.doc; }
     }
 
     @Reference
     private ConfigurationAdmin cm;
 
-    /** Constructor. */
     public DeyeBatteryInverterImpl() {
         super(
             OpenemsComponent.ChannelId.values(),
@@ -116,7 +91,7 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
     @Activate
     void activate(ComponentContext context, BatteryInverterConfig config) throws Exception {
         if (super.activate(context, config.id(), config.alias(), config.enabled(),
-                config.modbusUnitId(), this.cm, "Modbus", config.Modbus_target())) {
+                config.modbusUnitId(), this.cm, "Modbus", "(id=" + config.modbus_id() + ")")) {
             return;
         }
     }
@@ -153,9 +128,7 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
     }
 
     private int wattsToAmps(int watts) {
-        if (watts <= 0) {
-            return 0;
-        }
+        if (watts <= 0) return 0;
         return (int) Math.round((double) watts / BATTERY_VOLTAGE_V);
     }
 
@@ -177,10 +150,9 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
 
     @Override
     public int getPowerPrecision() {
-        // Deye werkt in Ampere stappen, bij 48V is 1A ≈ 48W
         return 48;
     }
-            
+
     @Override
     public BatteryInverterConstraint[] getStaticConstraints()
             throws OpenemsNamedException {
@@ -188,9 +160,7 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
     }
 
     @Override
-    public void setStartStop(StartStop value) {
-        // Start/stop is managed by the Deye inverter itself
-    }
+    public void setStartStop(StartStop value) {}
 
     @Override
     public String debugLog() {
