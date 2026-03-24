@@ -1,15 +1,16 @@
 package io.openems.edge.batteryinverter.deye;
 
+import static org.osgi.service.component.annotations.ConfigurationPolicy.REQUIRE;
+import static org.osgi.service.component.annotations.ReferenceCardinality.MANDATORY;
+import static org.osgi.service.component.annotations.ReferencePolicy.STATIC;
+import static org.osgi.service.component.annotations.ReferencePolicyOption.GREEDY;
+
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.service.metatype.annotations.Designate;
 
 import io.openems.common.exceptions.OpenemsError.OpenemsNamedException;
@@ -33,13 +34,12 @@ import io.openems.edge.common.startstop.StartStoppable;
 import io.openems.edge.common.taskmanager.Priority;
 
 @Designate(ocd = BatteryInverterConfig.class, factory = true)
-@Component(
-    name = "BatteryInverter.Deye.SG04LP3",
-    immediate = true,
-    configurationPolicy = ConfigurationPolicy.REQUIRE
-)
+@Component(//
+        name = "BatteryInverter.Deye.SG04LP3", //
+        immediate = true, //
+        configurationPolicy = REQUIRE)
 public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
-        implements ManagedSymmetricBatteryInverter, SymmetricBatteryInverter,
+        implements ManagedSymmetricBatteryInverter, SymmetricBatteryInverter, //
         ModbusComponent, OpenemsComponent, StartStoppable {
 
     private static final int REG_OPERATING_MODE = 142;
@@ -71,32 +71,28 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
     }
 
     @Reference
-    private ConfigurationAdmin cm;
+    protected ConfigurationAdmin cm;
 
     public DeyeBatteryInverterImpl() {
-        super(
-            OpenemsComponent.ChannelId.values(),
-            ModbusComponent.ChannelId.values(),
-            SymmetricBatteryInverter.ChannelId.values(),
-            ManagedSymmetricBatteryInverter.ChannelId.values(),
-            StartStoppable.ChannelId.values(),
-            ChannelId.values()
+        super(//
+                OpenemsComponent.ChannelId.values(), //
+                ModbusComponent.ChannelId.values(), //
+                SymmetricBatteryInverter.ChannelId.values(), //
+                ManagedSymmetricBatteryInverter.ChannelId.values(), //
+                StartStoppable.ChannelId.values(), //
+                ChannelId.values() //
         );
     }
 
-    @Reference(
-        policy = ReferencePolicy.STATIC,
-        policyOption = ReferencePolicyOption.GREEDY,
-        cardinality = ReferenceCardinality.MANDATORY
-    )
+    @Reference(policy = STATIC, policyOption = GREEDY, cardinality = MANDATORY)
     protected void setModbus(BridgeModbus modbus) {
         super.setModbus(modbus);
     }
 
     @Activate
     void activate(ComponentContext context, BatteryInverterConfig config) throws Exception {
-        if (super.activate(context, config.id(), config.alias(), config.enabled(),
-                config.modbusUnitId(), this.cm, "Modbus", config.Modbus_target())) {
+        if (super.activate(context, config.id(), config.alias(), config.enabled(), //
+                config.modbusUnitId(), this.cm, "Modbus", config.modbus_id())) {
             return;
         }
     }
@@ -109,27 +105,18 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
 
     @Override
     protected ModbusProtocol defineModbusProtocol() {
-        return new ModbusProtocol(this,
-            new FC3ReadRegistersTask(REG_OPERATING_MODE, Priority.LOW,
-                m(ChannelId.OPERATING_MODE, new UnsignedWordElement(REG_OPERATING_MODE))
-            ),
-            new FC3ReadRegistersTask(REG_GRID_POWER, Priority.HIGH,
-                m(ChannelId.GRID_POWER, new SignedWordElement(REG_GRID_POWER))
-            ),
-            new FC3ReadRegistersTask(REG_INVERTER_POWER, Priority.HIGH,
-                m(ChannelId.INVERTER_OUTPUT_POWER, new UnsignedWordElement(REG_INVERTER_POWER))
-            ),
-            new FC16WriteRegistersTask(REG_CHARGE_LIMIT,
-                m(ChannelId.SET_CHARGE_LIMIT_AMPERE,
-                    new UnsignedWordElement(REG_CHARGE_LIMIT)),
-                m(ChannelId.SET_DISCHARGE_LIMIT_AMPERE,
-                    new UnsignedWordElement(REG_DISCHARGE_LIMIT))
-            ),
-            new FC16WriteRegistersTask(REG_GRID_CHARGE_ENABLE,
-                m(ChannelId.SET_GRID_CHARGE_ENABLE,
-                    new UnsignedWordElement(REG_GRID_CHARGE_ENABLE))
-            )
-        );
+        return new ModbusProtocol(this, //
+                new FC3ReadRegistersTask(REG_OPERATING_MODE, Priority.LOW, //
+                        m(ChannelId.OPERATING_MODE, new UnsignedWordElement(REG_OPERATING_MODE))),
+                new FC3ReadRegistersTask(REG_GRID_POWER, Priority.HIGH, //
+                        m(ChannelId.GRID_POWER, new SignedWordElement(REG_GRID_POWER))),
+                new FC3ReadRegistersTask(REG_INVERTER_POWER, Priority.HIGH, //
+                        m(ChannelId.INVERTER_OUTPUT_POWER, new UnsignedWordElement(REG_INVERTER_POWER))),
+                new FC16WriteRegistersTask(REG_CHARGE_LIMIT, //
+                        m(ChannelId.SET_CHARGE_LIMIT_AMPERE, new UnsignedWordElement(REG_CHARGE_LIMIT)), //
+                        m(ChannelId.SET_DISCHARGE_LIMIT_AMPERE, new UnsignedWordElement(REG_DISCHARGE_LIMIT))),
+                new FC16WriteRegistersTask(REG_GRID_CHARGE_ENABLE, //
+                        m(ChannelId.SET_GRID_CHARGE_ENABLE, new UnsignedWordElement(REG_GRID_CHARGE_ENABLE))));
     }
 
     private int wattsToAmps(int watts) {
@@ -144,14 +131,14 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
             throws OpenemsNamedException {
         if (setActivePower >= 0) {
             this.<IntegerWriteChannel>channel(ChannelId.SET_CHARGE_LIMIT_AMPERE)
-                .setNextWriteValue(this.wattsToAmps(setActivePower));
+                    .setNextWriteValue(this.wattsToAmps(setActivePower));
             this.<IntegerWriteChannel>channel(ChannelId.SET_DISCHARGE_LIMIT_AMPERE)
-                .setNextWriteValue(0);
+                    .setNextWriteValue(0);
         } else {
             this.<IntegerWriteChannel>channel(ChannelId.SET_CHARGE_LIMIT_AMPERE)
-                .setNextWriteValue(0);
+                    .setNextWriteValue(0);
             this.<IntegerWriteChannel>channel(ChannelId.SET_DISCHARGE_LIMIT_AMPERE)
-                .setNextWriteValue(this.wattsToAmps(Math.abs(setActivePower)));
+                    .setNextWriteValue(this.wattsToAmps(Math.abs(setActivePower)));
         }
     }
 
@@ -161,8 +148,7 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
     }
 
     @Override
-    public BatteryInverterConstraint[] getStaticConstraints()
-            throws OpenemsNamedException {
+    public BatteryInverterConstraint[] getStaticConstraints() throws OpenemsNamedException {
         return BatteryInverterConstraint.NO_CONSTRAINTS;
     }
 
@@ -173,8 +159,8 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
 
     @Override
     public String debugLog() {
-        return "GridPwr:" + this.channel(ChannelId.GRID_POWER).value().asString()
-            + "|InvPwr:" + this.channel(ChannelId.INVERTER_OUTPUT_POWER).value().asString();
+        return "GridPwr:" + this.channel(ChannelId.GRID_POWER).value().asString() //
+                + "|InvPwr:" + this.channel(ChannelId.INVERTER_OUTPUT_POWER).value().asString();
     }
 
 }
