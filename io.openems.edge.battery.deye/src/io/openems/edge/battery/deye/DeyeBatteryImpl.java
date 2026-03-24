@@ -1,15 +1,16 @@
 package io.openems.edge.battery.deye;
 
+import static org.osgi.service.component.annotations.ConfigurationPolicy.REQUIRE;
+import static org.osgi.service.component.annotations.ReferenceCardinality.MANDATORY;
+import static org.osgi.service.component.annotations.ReferencePolicy.STATIC;
+import static org.osgi.service.component.annotations.ReferencePolicyOption.GREEDY;
+
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.service.metatype.annotations.Designate;
 
 import io.openems.edge.battery.api.Battery;
@@ -28,11 +29,10 @@ import io.openems.edge.common.startstop.StartStoppable;
 import io.openems.edge.common.taskmanager.Priority;
 
 @Designate(ocd = BatteryConfig.class, factory = true)
-@Component(
-    name = "Battery.Deye.SG04LP3",
-    immediate = true,
-    configurationPolicy = ConfigurationPolicy.REQUIRE
-)
+@Component(//
+        name = "Battery.Deye.SG04LP3", //
+        immediate = true, //
+        configurationPolicy = REQUIRE)
 public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
         implements Battery, ModbusComponent, OpenemsComponent, StartStoppable {
 
@@ -41,9 +41,9 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
     private static final int REG_BATTERY_PWR = 590;
 
     public enum ChannelId implements io.openems.edge.common.channel.ChannelId {
-        RUN_STATE(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
+        RUN_STATE(Doc.of(io.openems.common.types.OpenemsType.INTEGER) //
                 .text("Run State: 0=Standby, 2=Normal")),
-        BATTERY_POWER_RAW(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
+        BATTERY_POWER_RAW(Doc.of(io.openems.common.types.OpenemsType.INTEGER) //
                 .text("Battery Power raw int16 [W]"));
 
         private final Doc doc;
@@ -59,30 +59,26 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
     }
 
     @Reference
-    private ConfigurationAdmin cm;
+    protected ConfigurationAdmin cm;
 
     public DeyeBatteryImpl() {
-        super(
-            OpenemsComponent.ChannelId.values(),
-            ModbusComponent.ChannelId.values(),
-            Battery.ChannelId.values(),
-            ChannelId.values()
+        super(//
+                OpenemsComponent.ChannelId.values(), //
+                ModbusComponent.ChannelId.values(), //
+                Battery.ChannelId.values(), //
+                ChannelId.values() //
         );
     }
 
-    @Reference(
-        policy = ReferencePolicy.STATIC,
-        policyOption = ReferencePolicyOption.GREEDY,
-        cardinality = ReferenceCardinality.MANDATORY
-    )
+    @Reference(policy = STATIC, policyOption = GREEDY, cardinality = MANDATORY)
     protected void setModbus(BridgeModbus modbus) {
         super.setModbus(modbus);
     }
 
     @Activate
     void activate(ComponentContext context, BatteryConfig config) throws Exception {
-        if (super.activate(context, config.id(), config.alias(), config.enabled(),
-                config.modbusUnitId(), this.cm, "Modbus", config.Modbus_target())) {
+        if (super.activate(context, config.id(), config.alias(), config.enabled(), //
+                config.modbusUnitId(), this.cm, "Modbus", config.modbus_id())) {
             return;
         }
     }
@@ -95,22 +91,19 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
 
     @Override
     protected ModbusProtocol defineModbusProtocol() {
-        return new ModbusProtocol(this,
-            new FC3ReadRegistersTask(REG_RUN_STATE, Priority.LOW,
-                m(ChannelId.RUN_STATE, new UnsignedWordElement(REG_RUN_STATE))
-            ),
-            new FC3ReadRegistersTask(REG_BATTERY_SOC, Priority.HIGH,
-                m(Battery.ChannelId.SOC, new UnsignedWordElement(REG_BATTERY_SOC)),
-                new DummyRegisterElement(589),
-                m(ChannelId.BATTERY_POWER_RAW, new SignedWordElement(REG_BATTERY_PWR))
-            )
-        );
+        return new ModbusProtocol(this, //
+                new FC3ReadRegistersTask(REG_RUN_STATE, Priority.LOW, //
+                        m(ChannelId.RUN_STATE, new UnsignedWordElement(REG_RUN_STATE))),
+                new FC3ReadRegistersTask(REG_BATTERY_SOC, Priority.HIGH, //
+                        m(Battery.ChannelId.SOC, new UnsignedWordElement(REG_BATTERY_SOC)), //
+                        new DummyRegisterElement(589), //
+                        m(ChannelId.BATTERY_POWER_RAW, new SignedWordElement(REG_BATTERY_PWR))));
     }
 
     @Override
     public String debugLog() {
-        return "SOC:" + this.getSoc().asString()
-            + "|RunState:" + this.channel(ChannelId.RUN_STATE).value().asString();
+        return "SOC:" + this.getSoc().asString() //
+                + "|RunState:" + this.channel(ChannelId.RUN_STATE).value().asString();
     }
 
     @Override
