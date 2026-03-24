@@ -28,6 +28,14 @@ jobs:
       - name: Build all Java packages
         run: ./gradlew build --console=colored --warn
 
+      - name: Upload Deye bundles
+        uses: actions/upload-artifact@v4
+        with:
+          name: deye-bundles
+          path: |
+            io.openems.edge.battery.deye/generated/io.openems.edge.battery.deye.jar
+            io.openems.edge.batteryinverter.deye/generated/io.openems.edge.batteryinverter.deye.jar
+
       - name: Resolve OpenEMS bundles
         run: ./gradlew resolve --console=colored --warn
 
