@@ -19,7 +19,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
     boolean enabled() default true;
 
     @AttributeDefinition(name = "Modbus-ID", description = "ID of Modbus bridge")
-    String Modbus_target() default "(enabled=true)";
+    String Modbus_target() default "(id=modbus0)";
 
     @AttributeDefinition(name = "Modbus Unit-ID", description = "Deye slave ID (default 1)")
     int modbusUnitId() default 1;
