@@ -42,13 +42,13 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
         implements ManagedSymmetricBatteryInverter, SymmetricBatteryInverter,
         ModbusComponent, OpenemsComponent, StartStoppable {
 
-    private static final int REG_OPERATING_MODE    = 142;
-    private static final int REG_GRID_POWER        = 607;
-    private static final int REG_INVERTER_POWER    = 636;
-    private static final int REG_CHARGE_LIMIT      = 108;
-    private static final int REG_DISCHARGE_LIMIT   = 109;
+    private static final int REG_OPERATING_MODE = 142;
+    private static final int REG_GRID_POWER = 607;
+    private static final int REG_INVERTER_POWER = 636;
+    private static final int REG_CHARGE_LIMIT = 108;
+    private static final int REG_DISCHARGE_LIMIT = 109;
     private static final int REG_GRID_CHARGE_ENABLE = 130;
-    private static final int BATTERY_VOLTAGE_V     = 48;
+    private static final int BATTERY_VOLTAGE_V = 48;
 
     public enum ChannelId implements io.openems.edge.common.channel.ChannelId {
         GRID_POWER(Doc.of(io.openems.common.types.OpenemsType.INTEGER)),
@@ -59,10 +59,15 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
         SET_GRID_CHARGE_ENABLE(Doc.of(io.openems.common.types.OpenemsType.INTEGER));
 
         private final Doc doc;
-        ChannelId(Doc doc) { this.doc = doc; }
+
+        ChannelId(Doc doc) {
+            this.doc = doc;
+        }
 
         @Override
-        public Doc doc() { return this.doc; }
+        public Doc doc() {
+            return this.doc;
+        }
     }
 
     @Reference
@@ -128,7 +133,9 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
     }
 
     private int wattsToAmps(int watts) {
-        if (watts <= 0) return 0;
+        if (watts <= 0) {
+            return 0;
+        }
         return (int) Math.round((double) watts / BATTERY_VOLTAGE_V);
     }
 
@@ -150,7 +157,7 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
 
     @Override
     public int getPowerPrecision() {
-        return 48;
+        return BATTERY_VOLTAGE_V;
     }
 
     @Override
@@ -160,11 +167,14 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
     }
 
     @Override
-    public void setStartStop(StartStop value) {}
+    public void setStartStop(StartStop value) {
+        // Start/stop is managed by the Deye inverter itself
+    }
 
     @Override
     public String debugLog() {
         return "GridPwr:" + this.channel(ChannelId.GRID_POWER).value().asString()
             + "|InvPwr:" + this.channel(ChannelId.INVERTER_OUTPUT_POWER).value().asString();
     }
+
 }
