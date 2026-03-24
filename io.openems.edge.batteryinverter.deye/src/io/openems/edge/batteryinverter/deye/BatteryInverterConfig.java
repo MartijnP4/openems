@@ -9,8 +9,6 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 )
 @interface BatteryInverterConfig {
 
-    String service_pid();
-
     @AttributeDefinition(name = "Component-ID", description = "Unique ID of this Component")
     String id() default "batteryInverter0";
 
