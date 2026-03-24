@@ -40,8 +40,7 @@ import io.openems.edge.common.startstop.StartStoppable;
 @Component(
     name = "Battery.Deye.SG04LP3",
     immediate = true,
-    configurationPolicy = ConfigurationPolicy.REQUIRE,
-    configurationFactory = true
+    configurationPolicy = ConfigurationPolicy.REQUIRE
 )
 public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
         implements Battery, ModbusComponent, OpenemsComponent, StartStoppable {
