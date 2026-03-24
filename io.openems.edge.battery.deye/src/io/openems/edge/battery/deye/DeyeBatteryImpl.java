@@ -82,7 +82,7 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
     @Activate
     void activate(ComponentContext context, BatteryConfig config) throws Exception {
         if (super.activate(context, config.id(), config.alias(), config.enabled(),
-                config.modbusUnitId(), this.cm, "Modbus", "(id=" + config.modbus_id() + ")")) {
+                config.modbusUnitId(), this.cm, "Modbus", "(id=" + config.Modbus_target() + ")")) {
             return;
         }
     }
