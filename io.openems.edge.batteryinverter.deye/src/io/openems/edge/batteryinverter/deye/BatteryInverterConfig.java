@@ -19,8 +19,8 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
     boolean enabled() default true;
 
     @AttributeDefinition(name = "Modbus-ID", description = "ID of Modbus bridge")
-    String Modbus_target() default "modbus0";
+    String modbus_id() default "modbus0";
 
-    @AttributeDefinition(name = "Modbus Unit-ID", description = "Deye slave ID (default 1)")
+    @AttributeDefinition(name = "Modbus Unit-ID", description = "Unit ID of Modbus device (default 1)")
     int modbusUnitId() default 1;
 }
