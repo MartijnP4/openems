@@ -36,7 +36,7 @@ import io.openems.edge.common.taskmanager.Priority;
 public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
         implements Battery, ModbusComponent, OpenemsComponent, StartStoppable {
 
-    private static final int REG_RUN_STATE   = 500;
+    private static final int REG_RUN_STATE = 500;
     private static final int REG_BATTERY_SOC = 588;
     private static final int REG_BATTERY_PWR = 590;
 
@@ -47,10 +47,15 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
                 .text("Battery Power raw int16 [W]"));
 
         private final Doc doc;
-        ChannelId(Doc doc) { this.doc = doc; }
+
+        ChannelId(Doc doc) {
+            this.doc = doc;
+        }
 
         @Override
-        public Doc doc() { return this.doc; }
+        public Doc doc() {
+            return this.doc;
+        }
     }
 
     @Reference
@@ -109,5 +114,8 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
     }
 
     @Override
-    public void setStartStop(StartStop value) {}
+    public void setStartStop(StartStop value) {
+        // Start/stop is managed by the Deye inverter itself
+    }
+
 }
