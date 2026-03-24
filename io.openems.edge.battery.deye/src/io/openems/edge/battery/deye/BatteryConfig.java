@@ -23,4 +23,5 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
     @AttributeDefinition(name = "Modbus Unit-ID", description = "Unit ID of Modbus device (default 1)")
     int modbusUnitId() default 1;
+
 }
