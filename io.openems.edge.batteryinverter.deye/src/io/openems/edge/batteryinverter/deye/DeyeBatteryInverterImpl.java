@@ -172,6 +172,11 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
     }
 
     @Override
+    public void setStartStop(io.openems.edge.common.startstop.StartStop value) {
+        // Deye does not support explicit start/stop commands via Modbus
+    }
+
+    @Override
     public int getPowerPrecision() {
         // Deye werkt in Ampere stappen; bij 48V en 1A = 48W precisie
         return 48;
