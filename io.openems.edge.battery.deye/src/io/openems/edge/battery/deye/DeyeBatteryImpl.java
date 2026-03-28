@@ -26,15 +26,13 @@ import io.openems.edge.common.component.OpenemsComponent;
 import io.openems.edge.common.taskmanager.Priority;
 
 /**
- * Deye SUN-10K SG04LP3-EU — Battery Nature
- *
+ * Deye SUN-10K SG04LP3-EU — Battery Nature.
  * Reads SOC and battery power from the Deye inverter via Modbus TCP.
  * Uses validated register map from working Loxone installation.
- *
  * Register map:
- *   588  Battery SOC        uint16  %
- *   590  Battery Power      int16   W  (+ = charging, - = discharging)
- *   500  Run State          uint16  0=standby, 2=normal
+ * 588 Battery SOC uint16 percent,
+ * 590 Battery Power int16 W (+ charging, - discharging),
+ * 500 Run State uint16 (0=standby, 2=normal).
  */
 @Designate(ocd = BatteryConfig.class, factory = true)
 @Component(
