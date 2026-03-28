@@ -30,24 +30,24 @@ import io.openems.edge.common.component.OpenemsComponent;
 import io.openems.edge.common.taskmanager.Priority;
 
 /**
- * Deye SUN-10K SG04LP3-EU — BatteryInverter Nature
+ * Deye SUN-10K SG04LP3-EU — BatteryInverter Nature.
  *
- * Reads power data and writes charge/discharge setpoints via Modbus TCP.
+ * <p>Reads power data and writes charge/discharge setpoints via Modbus TCP.
  * Uses validated register map from working Loxone installation.
  *
- * Read registers:
- *   607  Grid Side Total Power    int16  W  (+ = import, - = export)
- *   636  Inverter Output Power    uint16 W
- *   142  Operating Mode           uint16
+ * <p>Read registers:
+ * 607 Grid Side Total Power int16 W (+ import, - export),
+ * 636 Inverter Output Power uint16 W,
+ * 142 Operating Mode uint16.
  *
- * Write registers:
- *   108  Charge Limit             uint16 A
- *   109  Discharge Limit          uint16 A
- *   130  Grid Charge Enable       uint16 0=off, 1=on
- *   142  Operating Mode           uint16
+ * <p>Write registers:
+ * 108 Charge Limit uint16 A,
+ * 109 Discharge Limit uint16 A,
+ * 130 Grid Charge Enable uint16 (0=off, 1=on),
+ * 142 Operating Mode uint16.
  *
- * Conversion: amps = round((watts * 1000) / battery_voltage_v)
- * Example: 9000W at 48V = 187A
+ * <p>Conversion: amps = round((watts * 1000) / battery_voltage_v).
+ * Example: 9000W at 48V = 187A.
  */
 @Designate(ocd = BatteryInverterConfig.class, factory = true)
 @Component(
@@ -169,6 +169,12 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
                 m(ChannelId.SET_GRID_CHARGE_ENABLE, new UnsignedWordElement(REG_GRID_CHARGE_ENABLE))
             )
         );
+    }
+
+    @Override
+    public int getPowerPrecision() {
+        // Deye werkt in Ampere stappen; bij 48V en 1A = 48W precisie
+        return 48;
     }
 
     @Override
