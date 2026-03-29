@@ -27,12 +27,13 @@ import io.openems.edge.common.taskmanager.Priority;
 
 /**
  * Deye SUN-10K SG04LP3-EU — Battery Nature.
- * Reads SOC and battery power from the Deye inverter via Modbus TCP.
+ * Reads SOC, voltage and battery power from the Deye inverter via Modbus TCP.
  * Uses validated register map from working Loxone installation.
  * Register map:
+ * 500 Run State uint16 (0=standby, 2=normal),
+ * 587 Battery Voltage uint16 V,
  * 588 Battery SOC uint16 percent,
- * 590 Battery Power int16 W (+ charging, - discharging),
- * 500 Run State uint16 (0=standby, 2=normal).
+ * 590 Battery Power int16 W (+ charging, - discharging).
  */
 @Designate(ocd = BatteryConfig.class, factory = true)
 @Component(
@@ -44,9 +45,10 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
         implements Battery, ModbusComponent, OpenemsComponent {
 
     // Register addresses
-    private static final int REG_RUN_STATE   = 500;
-    private static final int REG_BATTERY_SOC = 588;
-    private static final int REG_BATTERY_PWR = 590;
+    private static final int REG_RUN_STATE       = 500;
+    private static final int REG_BATTERY_VOLTAGE = 587;
+    private static final int REG_BATTERY_SOC     = 588;
+    private static final int REG_BATTERY_PWR     = 590;
 
     public enum ChannelId implements io.openems.edge.common.channel.ChannelId {
         RUN_STATE(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
@@ -54,6 +56,9 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
                 .persistencePriority(PersistencePriority.MEDIUM)),
         BATTERY_POWER_RAW(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
                 .text("Battery Power raw int16 [W]")
+                .persistencePriority(PersistencePriority.HIGH)),
+        BATTERY_VOLTAGE(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
+                .text("Battery Voltage [V]")
                 .persistencePriority(PersistencePriority.HIGH));
 
         private final Doc doc;
@@ -109,12 +114,15 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
             new FC3ReadRegistersTask(REG_RUN_STATE, Priority.LOW,
                 m(ChannelId.RUN_STATE, new UnsignedWordElement(REG_RUN_STATE))
             ),
+            // Battery Voltage — register 587, uint16 [V]
+            new FC3ReadRegistersTask(REG_BATTERY_VOLTAGE, Priority.HIGH,
+                m(ChannelId.BATTERY_VOLTAGE, new UnsignedWordElement(REG_BATTERY_VOLTAGE))
+            ),
             // Battery SOC — register 588, uint16, maps to Battery.ChannelId.SOC
             new FC3ReadRegistersTask(REG_BATTERY_SOC, Priority.HIGH,
                 m(Battery.ChannelId.SOC, new UnsignedWordElement(REG_BATTERY_SOC))
             ),
-            // Battery Power — register 590, int16, maps to Battery.ChannelId.CURRENT
-            // Also stored in custom channel for raw value
+            // Battery Power — register 590, int16
             new FC3ReadRegistersTask(REG_BATTERY_PWR, Priority.HIGH,
                 m(ChannelId.BATTERY_POWER_RAW, new SignedWordElement(REG_BATTERY_PWR))
             )
@@ -124,12 +132,12 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
     @Override
     public void setStartStop(io.openems.edge.common.startstop.StartStop value) {
         // Deye does not support explicit start/stop commands via Modbus
-        // Accept the value but take no action
     }
 
     @Override
     public String debugLog() {
         return "SOC:" + this.getSoc().asString()
+            + "|V:" + this.channel(ChannelId.BATTERY_VOLTAGE).value().asString() + "V"
             + "|Pwr:" + this.channel(ChannelId.BATTERY_POWER_RAW).value().asString() + "W"
             + "|State:" + this.channel(ChannelId.RUN_STATE).value().asString();
     }
