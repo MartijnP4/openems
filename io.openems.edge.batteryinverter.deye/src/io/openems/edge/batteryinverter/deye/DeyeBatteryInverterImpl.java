@@ -150,11 +150,11 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
             new FC3ReadRegistersTask(REG_GRID_POWER, Priority.HIGH,
                 m(ChannelId.GRID_POWER, new SignedWordElement(REG_GRID_POWER))
             ),
-            // Inverter Output Power — register 636, uint16
+            // Inverter Output Power — register 636, int16
             // Maps to ACTIVE_POWER (SymmetricBatteryInverter Nature channel)
             new FC3ReadRegistersTask(REG_INVERTER_POWER, Priority.HIGH,
                 m(SymmetricBatteryInverter.ChannelId.ACTIVE_POWER,
-                    new UnsignedWordElement(REG_INVERTER_POWER))
+                    new SignedWordElement(REG_INVERTER_POWER))
             ),
             // Write: Charge Limit — register 108, uint16 [A]
             new FC16WriteRegistersTask(REG_CHARGE_LIMIT,
