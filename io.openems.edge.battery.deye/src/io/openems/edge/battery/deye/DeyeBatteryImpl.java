@@ -58,7 +58,7 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
         BATTERY_POWER_RAW(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
                 .text("Battery Power raw int16 [W]")
                 .persistencePriority(PersistencePriority.HIGH)),
-        BATTERY_VOLTAGE(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
+        BATTERY_VOLTAGE(Doc.of(io.openems.common.types.OpenemsType.FLOAT)
                 .text("Battery Voltage [V]")
                 .persistencePriority(PersistencePriority.HIGH));
 
