@@ -59,7 +59,7 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
                 .text("Battery Power raw int16 [W]")
                 .persistencePriority(PersistencePriority.HIGH)),
         BATTERY_VOLTAGE(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
-                .text("Battery Voltage [mV]")
+                .text("Battery Voltage raw 0.1V units")
                 .persistencePriority(PersistencePriority.HIGH));
 
         private final Doc doc;
@@ -117,8 +117,7 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
             ),
             // Battery Voltage — register 587, uint16, unit is 0.1V → scale by 0.1
             new FC3ReadRegistersTask(REG_BATTERY_VOLTAGE, Priority.HIGH,
-                m(ChannelId.BATTERY_VOLTAGE, new UnsignedWordElement(REG_BATTERY_VOLTAGE),
-                    ElementToChannelConverter.SCALE_FACTOR_2)
+                m(ChannelId.BATTERY_VOLTAGE, new UnsignedWordElement(REG_BATTERY_VOLTAGE))
             ),
             // Battery SOC — register 588, uint16, maps to Battery.ChannelId.SOC
             new FC3ReadRegistersTask(REG_BATTERY_SOC, Priority.HIGH,
