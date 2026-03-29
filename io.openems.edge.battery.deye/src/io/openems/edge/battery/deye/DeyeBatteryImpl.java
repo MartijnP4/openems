@@ -16,6 +16,7 @@ import io.openems.common.channel.PersistencePriority;
 import io.openems.edge.battery.api.Battery;
 import io.openems.edge.bridge.modbus.api.AbstractOpenemsModbusComponent;
 import io.openems.edge.bridge.modbus.api.BridgeModbus;
+import io.openems.edge.bridge.modbus.api.ElementToChannelConverter;
 import io.openems.edge.bridge.modbus.api.ModbusComponent;
 import io.openems.edge.bridge.modbus.api.ModbusProtocol;
 import io.openems.edge.bridge.modbus.api.element.UnsignedWordElement;
@@ -31,7 +32,7 @@ import io.openems.edge.common.taskmanager.Priority;
  * Uses validated register map from working Loxone installation.
  * Register map:
  * 500 Run State uint16 (0=standby, 2=normal),
- * 587 Battery Voltage uint16 V,
+ * 587 Battery Voltage uint16 0.1V units,
  * 588 Battery SOC uint16 percent,
  * 590 Battery Power int16 W (+ charging, - discharging).
  */
@@ -114,9 +115,10 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
             new FC3ReadRegistersTask(REG_RUN_STATE, Priority.LOW,
                 m(ChannelId.RUN_STATE, new UnsignedWordElement(REG_RUN_STATE))
             ),
-            // Battery Voltage — register 587, uint16 [V]
+            // Battery Voltage — register 587, uint16, unit is 0.1V → scale by 0.1
             new FC3ReadRegistersTask(REG_BATTERY_VOLTAGE, Priority.HIGH,
-                m(ChannelId.BATTERY_VOLTAGE, new UnsignedWordElement(REG_BATTERY_VOLTAGE))
+                m(ChannelId.BATTERY_VOLTAGE, new UnsignedWordElement(REG_BATTERY_VOLTAGE),
+                    ElementToChannelConverter.SCALE_FACTOR_MINUS_1)
             ),
             // Battery SOC — register 588, uint16, maps to Battery.ChannelId.SOC
             new FC3ReadRegistersTask(REG_BATTERY_SOC, Priority.HIGH,
