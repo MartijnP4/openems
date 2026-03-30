@@ -84,13 +84,16 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
                 .persistencePriority(PersistencePriority.MEDIUM)),
         SET_CHARGE_LIMIT_AMPERE(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
                 .text("Charge limit [A] written to register 108")
-                .persistencePriority(PersistencePriority.MEDIUM)),
+                .persistencePriority(PersistencePriority.MEDIUM)
+                .accessMode(io.openems.common.channel.AccessMode.READ_WRITE)),
         SET_DISCHARGE_LIMIT_AMPERE(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
                 .text("Discharge limit [A] written to register 109")
-                .persistencePriority(PersistencePriority.MEDIUM)),
+                .persistencePriority(PersistencePriority.MEDIUM)
+                .accessMode(io.openems.common.channel.AccessMode.READ_WRITE)),
         SET_GRID_CHARGE_ENABLE(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
                 .text("Grid Charge Enable: 0=off, 1=on")
-                .persistencePriority(PersistencePriority.MEDIUM));
+                .persistencePriority(PersistencePriority.MEDIUM)
+                .accessMode(io.openems.common.channel.AccessMode.READ_WRITE));
 
         private final Doc doc;
 
