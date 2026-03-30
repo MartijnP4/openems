@@ -12,6 +12,7 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.service.metatype.annotations.Designate;
 
+import io.openems.common.channel.AccessMode;
 import io.openems.common.channel.PersistencePriority;
 import io.openems.common.exceptions.OpenemsError.OpenemsNamedException;
 import io.openems.edge.batteryinverter.api.ManagedSymmetricBatteryInverter;
@@ -27,6 +28,7 @@ import io.openems.edge.bridge.modbus.api.task.FC16WriteRegistersTask;
 import io.openems.edge.common.channel.Doc;
 import io.openems.edge.common.channel.IntegerWriteChannel;
 import io.openems.edge.common.component.OpenemsComponent;
+import io.openems.edge.common.startstop.StartStoppable;
 import io.openems.edge.common.taskmanager.Priority;
 
 /**
@@ -37,14 +39,13 @@ import io.openems.edge.common.taskmanager.Priority;
  *
  * <p>Read registers:
  * 607 Grid Side Total Power int16 W (+ import, - export),
- * 636 Inverter Output Power uint16 W,
+ * 636 Inverter Output Power int16 W,
  * 142 Operating Mode uint16.
  *
  * <p>Write registers:
  * 108 Charge Limit uint16 A,
  * 109 Discharge Limit uint16 A,
- * 130 Grid Charge Enable uint16 (0=off, 1=on),
- * 142 Operating Mode uint16.
+ * 130 Grid Charge Enable uint16 (0=off, 1=on).
  *
  * <p>Conversion: amps = round((watts * 1000) / battery_voltage_v).
  * Example: 9000W at 48V = 187A.
@@ -57,17 +58,17 @@ import io.openems.edge.common.taskmanager.Priority;
 )
 public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
         implements ManagedSymmetricBatteryInverter, SymmetricBatteryInverter,
-        ModbusComponent, OpenemsComponent {
+        ModbusComponent, OpenemsComponent, StartStoppable {
 
     // Read register addresses
-    private static final int REG_OPERATING_MODE      = 142;
-    private static final int REG_GRID_POWER          = 607;
-    private static final int REG_INVERTER_POWER      = 636;
+    private static final int REG_OPERATING_MODE     = 142;
+    private static final int REG_GRID_POWER         = 607;
+    private static final int REG_INVERTER_POWER     = 636;
 
     // Write register addresses
-    private static final int REG_CHARGE_LIMIT        = 108;
-    private static final int REG_DISCHARGE_LIMIT     = 109;
-    private static final int REG_GRID_CHARGE_ENABLE  = 130;
+    private static final int REG_CHARGE_LIMIT       = 108;
+    private static final int REG_DISCHARGE_LIMIT    = 109;
+    private static final int REG_GRID_CHARGE_ENABLE = 130;
 
     // Battery nominal voltage for W → A conversion
     private static final int BATTERY_VOLTAGE_V = 48;
@@ -85,15 +86,15 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
         SET_CHARGE_LIMIT_AMPERE(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
                 .text("Charge limit [A] written to register 108")
                 .persistencePriority(PersistencePriority.MEDIUM)
-                .accessMode(io.openems.common.channel.AccessMode.READ_WRITE)),
+                .accessMode(AccessMode.READ_WRITE)),
         SET_DISCHARGE_LIMIT_AMPERE(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
                 .text("Discharge limit [A] written to register 109")
                 .persistencePriority(PersistencePriority.MEDIUM)
-                .accessMode(io.openems.common.channel.AccessMode.READ_WRITE)),
+                .accessMode(AccessMode.READ_WRITE)),
         SET_GRID_CHARGE_ENABLE(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
                 .text("Grid Charge Enable: 0=off, 1=on")
                 .persistencePriority(PersistencePriority.MEDIUM)
-                .accessMode(io.openems.common.channel.AccessMode.READ_WRITE));
+                .accessMode(AccessMode.READ_WRITE));
 
         private final Doc doc;
 
@@ -114,6 +115,7 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
         super(
             OpenemsComponent.ChannelId.values(),
             ModbusComponent.ChannelId.values(),
+            StartStoppable.ChannelId.values(),
             SymmetricBatteryInverter.ChannelId.values(),
             ManagedSymmetricBatteryInverter.ChannelId.values(),
             ChannelId.values()
@@ -135,6 +137,7 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
                 config.modbusUnitId(), this.cm, "Modbus", config.modbus_id())) {
             return;
         }
+        this._setMaxApparentPower(MAX_POWER_W);
     }
 
     @Deactivate
@@ -145,7 +148,7 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
     @Override
     protected ModbusProtocol defineModbusProtocol() {
         return new ModbusProtocol(this,
-            // Operating Mode — register 142, uint16 (also writable)
+            // Operating Mode — register 142, uint16
             new FC3ReadRegistersTask(REG_OPERATING_MODE, Priority.LOW,
                 m(ChannelId.OPERATING_MODE, new UnsignedWordElement(REG_OPERATING_MODE))
             ),
@@ -185,11 +188,6 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
         return 48;
     }
 
-    @Override
-    public int getMaxApparentPower() {
-        return MAX_POWER_W;
-    }
-            
     @Override
     public void run(io.openems.edge.battery.api.Battery battery, int setActivePower, int setReactivePower)
             throws OpenemsNamedException {
