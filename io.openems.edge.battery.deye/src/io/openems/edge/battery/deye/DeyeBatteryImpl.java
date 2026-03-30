@@ -82,6 +82,7 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
             OpenemsComponent.ChannelId.values(),
             ModbusComponent.ChannelId.values(),
             Battery.ChannelId.values(),
+            io.openems.edge.common.startstop.StartStoppable.ChannelId.values(),
             ChannelId.values()
         );
     }
