@@ -137,7 +137,7 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
                 config.modbusUnitId(), this.cm, "Modbus", config.modbus_id())) {
             return;
         }
-        this._setMaxApparentPower(MAX_POWER_W),
+        this._setMaxApparentPower(MAX_POWER_W);
         this._setGridMode(io.openems.edge.common.sum.GridMode.ON_GRID);
     }
 
