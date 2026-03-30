@@ -186,6 +186,11 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
     }
 
     @Override
+    public int getMaxApparentPower() {
+        return MAX_POWER_W;
+    }
+            
+    @Override
     public void run(io.openems.edge.battery.api.Battery battery, int setActivePower, int setReactivePower)
             throws OpenemsNamedException {
 
