@@ -103,6 +103,12 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
                 config.modbusUnitId(), this.cm, "Modbus", config.modbus_id())) {
             return;
         }
+        // Vaste batterijparameters voor ENCAP LiFePO4 16S
+        this._setChargeMaxVoltage(58);      // 3.65V x 16
+        this._setDischargeMinVoltage(48);   // 3.0V x 16 veilige ondergrens
+        this._setChargeMaxCurrent(200);
+        this._setDischargeMaxCurrent(200);
+        this._setCapacity(10000);           // 10 kWh
     }
 
     @Deactivate
