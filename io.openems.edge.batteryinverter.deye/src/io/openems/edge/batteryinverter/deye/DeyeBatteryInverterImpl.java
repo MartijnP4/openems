@@ -76,6 +76,9 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
     // Max inverter power in W
     private static final int MAX_POWER_W = 10000;
 
+    // Max charge/discharge current in A (200A per Deye Battery Setting)
+    private static final int MAX_AMPS = 200;
+
     public enum ChannelId implements io.openems.edge.common.channel.ChannelId {
         GRID_POWER(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
                 .text("Grid Side Total Power [W] (+ import, - export)")
@@ -195,24 +198,23 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
 
         // Convert W setpoint to A for registers 108/109
         int ampere = (int) Math.round(Math.abs((double) setActivePower * 1000.0 / BATTERY_VOLTAGE_V));
-        int maxAmpere = MAX_POWER_W * 1000 / BATTERY_VOLTAGE_V;
-        ampere = Math.min(ampere, maxAmpere);
+        ampere = Math.min(ampere, MAX_AMPS);
 
         IntegerWriteChannel chargeChannel    = this.channel(ChannelId.SET_CHARGE_LIMIT_AMPERE);
         IntegerWriteChannel dischargeChannel = this.channel(ChannelId.SET_DISCHARGE_LIMIT_AMPERE);
 
         if (setActivePower < 0) {
-            // Discharge: set discharge limit, zero charge limit
+            // Discharge: set discharge limit, release charge to max
             dischargeChannel.setNextWriteValue(ampere);
-            chargeChannel.setNextWriteValue(0);
+            chargeChannel.setNextWriteValue(MAX_AMPS);
         } else if (setActivePower > 0) {
-            // Charge: set charge limit, zero discharge limit
+            // Charge: set charge limit, release discharge to max
             chargeChannel.setNextWriteValue(ampere);
-            dischargeChannel.setNextWriteValue(0);
+            dischargeChannel.setNextWriteValue(MAX_AMPS);
         } else {
-            // Idle: zero both
-            chargeChannel.setNextWriteValue(0);
-            dischargeChannel.setNextWriteValue(0);
+            // Idle: release both to max — let Deye TOU handle it
+            chargeChannel.setNextWriteValue(MAX_AMPS);
+            dischargeChannel.setNextWriteValue(MAX_AMPS);
         }
     }
 
