@@ -43,7 +43,8 @@ import io.openems.edge.common.taskmanager.Priority;
     configurationPolicy = ConfigurationPolicy.REQUIRE
 )
 public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
-        implements Battery, ModbusComponent, OpenemsComponent {
+        implements Battery, ModbusComponent, OpenemsComponent,
+        io.openems.edge.common.startstop.StartStoppable {
 
     // Register addresses
     private static final int REG_RUN_STATE       = 500;
