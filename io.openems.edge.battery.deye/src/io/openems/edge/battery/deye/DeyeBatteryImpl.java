@@ -109,6 +109,7 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
         this._setChargeMaxCurrent(200);
         this._setDischargeMaxCurrent(200);
         this._setCapacity(10000);           // 10 kWh
+        this._setStartStop(io.openems.edge.common.startstop.StartStop.START);
     }
 
     @Deactivate
