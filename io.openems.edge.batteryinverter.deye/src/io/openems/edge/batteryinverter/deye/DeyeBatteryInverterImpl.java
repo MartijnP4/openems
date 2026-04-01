@@ -12,6 +12,8 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.service.metatype.annotations.Designate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.openems.common.channel.AccessMode;
 import io.openems.common.channel.PersistencePriority;
 import io.openems.common.exceptions.OpenemsError.OpenemsNamedException;
@@ -59,6 +61,8 @@ import io.openems.edge.common.taskmanager.Priority;
 public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
         implements ManagedSymmetricBatteryInverter, SymmetricBatteryInverter,
         ModbusComponent, OpenemsComponent, StartStoppable {
+
+    private final Logger log = LoggerFactory.getLogger(DeyeBatteryInverterImpl.class);
 
     // Read register addresses
     private static final int REG_OPERATING_MODE     = 142;
@@ -184,7 +188,8 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
 
     @Override
     public void setStartStop(io.openems.edge.common.startstop.StartStop value) {
-        // Deye does not support explicit start/stop commands via Modbus
+        // Deye has no explicit start/stop — always report as started
+        this._setStartStop(io.openems.edge.common.startstop.StartStop.START);
     }
 
     @Override
@@ -198,6 +203,7 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
             throws OpenemsNamedException {
 
         // Convert W setpoint to A for registers 108/109
+        this.logInfo(this.log, "run() setActivePower=" + setActivePower);
         int ampere = (int) Math.round(Math.abs((double) setActivePower * 1000.0 / BATTERY_VOLTAGE_V));
         ampere = Math.min(ampere, MAX_AMPS);
 
