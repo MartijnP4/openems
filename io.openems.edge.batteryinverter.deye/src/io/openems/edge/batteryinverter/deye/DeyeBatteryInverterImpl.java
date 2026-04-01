@@ -73,6 +73,7 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
     private static final int REG_CHARGE_LIMIT       = 108;
     private static final int REG_DISCHARGE_LIMIT    = 109;
     private static final int REG_GRID_CHARGE_ENABLE = 130;
+    private static final int REG_SOC_TARGET_TP1     = 166; // TOU tijdslot 1 SOC target %
 
     // Battery nominal voltage for W → A conversion
     private static final int BATTERY_VOLTAGE_V = 48;
@@ -100,6 +101,10 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
                 .accessMode(AccessMode.READ_WRITE)),
         SET_GRID_CHARGE_ENABLE(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
                 .text("Grid Charge Enable: 0=off, 1=on")
+                .persistencePriority(PersistencePriority.MEDIUM)
+                .accessMode(AccessMode.READ_WRITE)),
+        SET_SOC_TARGET_TP1(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
+                .text("TOU tijdslot 1 SOC target [%] — register 166")
                 .persistencePriority(PersistencePriority.MEDIUM)
                 .accessMode(AccessMode.READ_WRITE));
 
@@ -182,6 +187,10 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
             // Write: Grid Charge Enable — register 130, uint16
             new FC16WriteRegistersTask(REG_GRID_CHARGE_ENABLE,
                 m(ChannelId.SET_GRID_CHARGE_ENABLE, new UnsignedWordElement(REG_GRID_CHARGE_ENABLE))
+            ),
+            // Write: TOU tijdslot 1 SOC target — register 166, uint16 [%]
+            new FC16WriteRegistersTask(REG_SOC_TARGET_TP1,
+                m(ChannelId.SET_SOC_TARGET_TP1, new UnsignedWordElement(REG_SOC_TARGET_TP1))
             )
         );
     }
@@ -222,6 +231,20 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
             // Idle: release both to max — let Deye TOU handle it
             chargeChannel.setNextWriteValue(MAX_AMPS);
             dischargeChannel.setNextWriteValue(MAX_AMPS);
+        }
+
+        // Stuur SOC target voor TOU tijdslot 1 op basis van setActivePower richting
+        IntegerWriteChannel socTargetChannel = this.channel(ChannelId.SET_SOC_TARGET_TP1);
+        int currentSoc = battery.getSoc().orElse(50);
+        if (setActivePower > 0) {
+            // Laden gewenst: zet target hoger dan huidige SOC
+            socTargetChannel.setNextWriteValue(Math.min(currentSoc + 10, 100));
+        } else if (setActivePower < 0) {
+            // Ontladen gewenst: zet target lager dan huidige SOC
+            socTargetChannel.setNextWriteValue(Math.max(currentSoc - 10, 5));
+        } else {
+            // Idle: behoud huidige SOC
+            socTargetChannel.setNextWriteValue(currentSoc);
         }
     }
 
