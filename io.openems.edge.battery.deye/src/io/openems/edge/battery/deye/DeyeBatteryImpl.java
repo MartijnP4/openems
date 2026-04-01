@@ -141,7 +141,8 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
 
     @Override
     public void setStartStop(io.openems.edge.common.startstop.StartStop value) {
-        // Deye does not support explicit start/stop commands via Modbus
+        // Deye has no explicit start/stop — always report as started
+        this._setStartStop(io.openems.edge.common.startstop.StartStop.START);
     }
 
     @Override
