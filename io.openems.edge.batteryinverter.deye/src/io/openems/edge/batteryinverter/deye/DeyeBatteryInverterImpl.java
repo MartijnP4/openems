@@ -76,6 +76,9 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
     // Max inverter power in W
     private static final int MAX_POWER_W = 10000;
 
+    // Max charge/discharge current in A
+    private static final int MAX_AMPS = 200;
+
     public enum ChannelId implements io.openems.edge.common.channel.ChannelId {
         GRID_POWER(Doc.of(io.openems.common.types.OpenemsType.INTEGER)
                 .text("Grid Side Total Power [W] (+ import, - export)")
@@ -111,9 +114,6 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
     @Reference
     private ConfigurationAdmin cm;
 
-    // Max charge/discharge current in A (200A per Deye Battery Setting)
-    private static final int MAX_AMPS = 200;
-
     public DeyeBatteryInverterImpl() {
         super(
             OpenemsComponent.ChannelId.values(),
@@ -124,6 +124,7 @@ public class DeyeBatteryInverterImpl extends AbstractOpenemsModbusComponent
             ChannelId.values()
         );
         this._setGridMode(io.openems.edge.common.sum.GridMode.ON_GRID);
+        this._setStartStop(io.openems.edge.common.startstop.StartStop.START);
     }
 
     @Reference(
