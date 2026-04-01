@@ -125,10 +125,13 @@ public class DeyeBatteryImpl extends AbstractOpenemsModbusComponent
                 m(ChannelId.RUN_STATE, new UnsignedWordElement(REG_RUN_STATE))
             ),
             // Battery Voltage — register 587, uint16, unit is 0.1V → scale by 0.1
+            // Maps to both Battery.ChannelId.VOLTAGE (scaled) and custom BATTERY_VOLTAGE (raw)
             new FC3ReadRegistersTask(REG_BATTERY_VOLTAGE, Priority.HIGH,
                 m(Battery.ChannelId.VOLTAGE,
                     new UnsignedWordElement(REG_BATTERY_VOLTAGE),
-                    ElementToChannelConverter.SCALE_FACTOR_MINUS_1),
+                    ElementToChannelConverter.SCALE_FACTOR_MINUS_1)
+            ),
+            new FC3ReadRegistersTask(REG_BATTERY_VOLTAGE, Priority.LOW,
                 m(ChannelId.BATTERY_VOLTAGE, new UnsignedWordElement(REG_BATTERY_VOLTAGE))
             ),
             // Battery SOC — register 588, uint16, maps to Battery.ChannelId.SOC
